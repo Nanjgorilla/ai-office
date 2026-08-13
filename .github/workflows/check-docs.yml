@@ -1,0 +1,25 @@
+name: ルール文書の点検
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - "dependabot/**"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 追記ログの更新チェックで、変更前の内容と比べるため履歴が要る
+          fetch-depth: 0
+
+      - name: 点検
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            python3 .github/scripts/check_docs.py "origin/${{ github.base_ref }}"
+          else
+            python3 .github/scripts/check_docs.py
+          fi
