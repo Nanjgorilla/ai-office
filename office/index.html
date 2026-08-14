@@ -2,12 +2,12 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AIオフィス平面図</title>
 <style>
 /* ============================================================
    色。昼は図面の紙、夜は消灯したオフィス。
-   稼働は「席の灯り」で示す。人の色は変えない。
+   稼働は「席の灯り」で示す。
    ============================================================ */
 :root{
   --ground:#D8DED6;
@@ -26,6 +26,7 @@
   --stamp:#AF3A2C;
   --card:#FFFDF6;
   --shadow:rgba(29,38,33,.16);
+  --gear:#46534D;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -45,6 +46,7 @@
     --stamp:#DE7160;
     --card:#28333B;
     --shadow:rgba(0,0,0,.45);
+    --gear:#C3D0D5;
   }
 }
 :root[data-theme="dark"]{
@@ -64,6 +66,7 @@
   --stamp:#DE7160;
   --card:#28333B;
   --shadow:rgba(0,0,0,.45);
+  --gear:#C3D0D5;
 }
 
 *{box-sizing:border-box}
@@ -75,6 +78,7 @@ body{
   font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP","Meiryo",system-ui,sans-serif;
   font-size:14px;
   line-height:1.7;
+  -webkit-text-size-adjust:100%;
 }
 
 .mincho{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","Songti SC",serif}
@@ -94,7 +98,7 @@ header.plate{
   display:flex;
   flex-wrap:wrap;
   align-items:flex-end;
-  gap:20px 28px;
+  gap:16px 28px;
   padding-bottom:14px;
   border-bottom:1.5px solid var(--wall);
 }
@@ -158,7 +162,9 @@ header.plate{
   gap:18px;
   align-items:start;
 }
-@media (max-width:1080px){
+/* 日誌を横に置くと平面図が狭くなり、横並びの間取りが入らなくなる。
+   入らなくなる手前で、日誌を下に落とす */
+@media (max-width:1180px){
   .layout{grid-template-columns:minmax(0,1fr)}
 }
 
@@ -181,7 +187,6 @@ header.plate{
 .stage{
   position:absolute;
   top:0;left:0;
-  width:1000px;height:640px;
   transform-origin:top left;
 }
 
@@ -193,14 +198,14 @@ header.plate{
 }
 .room .room-name{
   position:absolute;
-  top:10px;left:14px;
+  top:9px;left:13px;
   font-size:12px;
   letter-spacing:.28em;
   color:var(--ink-2);
 }
 .room .room-note{
   position:absolute;
-  top:30px;left:14px;
+  top:29px;left:13px;
   font-size:10.5px;
   letter-spacing:.06em;
   color:var(--ink-3);
@@ -213,6 +218,11 @@ header.plate{
   border-top:1.5px solid var(--wall);
   border-bottom:1.5px solid var(--wall);
 }
+.opening.vert{
+  border:none;
+  border-left:1.5px solid var(--wall);
+  border-right:1.5px solid var(--wall);
+}
 .tag{
   position:absolute;
   font-size:10.5px;
@@ -220,7 +230,6 @@ header.plate{
   color:var(--ink-3);
   white-space:nowrap;
 }
-.tag.v{writing-mode:vertical-rl;letter-spacing:.4em}
 
 /* 備品 */
 .furniture{
@@ -262,7 +271,7 @@ header.plate{
   letter-spacing:.02em;
 }
 
-/* 席 */
+/* ---------------------------------------------------------- 席 */
 .spot{
   position:absolute;
   transform:translate(-50%,-50%);
@@ -274,9 +283,6 @@ header.plate{
   height:56px;
   border:1.5px solid var(--wall);
   background:var(--panel);
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
   transition:box-shadow .5s ease,border-color .5s ease;
 }
 /* 灯り。稼働中だけ点く */
@@ -298,32 +304,58 @@ header.plate{
   box-shadow:0 0 0 1px var(--lamp-ring), 0 6px 18px -8px var(--shadow);
 }
 
-/* 人 */
+/* ---------------------------------------------------------- 人 */
 .person{
   position:absolute;
-  left:50%;bottom:26px;
+  left:50%;bottom:20px;
   transform:translateX(-50%);
-  width:34px;height:34px;
+  width:58px;height:58px;
 }
-.person i{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  background:var(--ink-3);
-  transition:background .5s ease;
+.char{
+  display:block;
+  width:58px;height:58px;
+  overflow:visible;
+  transition:filter .5s ease,opacity .5s ease;
+  filter:grayscale(.45);
+  opacity:.78;
 }
-.person .head{top:0;width:15px;height:15px;border-radius:50%}
-.person .body{top:17px;width:27px;height:17px;border-radius:13px 13px 3px 3px}
-.spot.busy .person i{background:var(--ink)}
-.spot.busy .person{animation:bob 1.6s ease-in-out infinite}
+.spot.busy .char{filter:none;opacity:1}
+
+.char .body,.char .arm,.char .head{fill:var(--c)}
+.char .gear{fill:var(--gear)}
+.char .gearline{fill:none;stroke:var(--gear);stroke-width:2.6;stroke-linecap:round}
+.char .eye{fill:#2A3430}
+.char .lid{fill:none;stroke:#2A3430;stroke-width:2.2;stroke-linecap:round}
+.char .mouth{fill:none;stroke:#2A3430;stroke-width:2;stroke-linecap:round}
+.char .cheek{fill:#E07A80;opacity:.45}
+.char .bag{fill:var(--c);stroke:var(--gear);stroke-width:2.2}
+.char .q{fill:var(--gear);font-size:17px;font-weight:700}
+
+.char .eyes-open{display:none;transform-box:fill-box;transform-origin:center}
+.char .eyes-shut{display:block}
+.spot.busy .char .eyes-open{display:block;animation:blink 4.4s infinite}
+.spot.busy .char .eyes-shut{display:none}
+@keyframes blink{
+  0%,92%,100%{transform:scaleY(1)}
+  95%{transform:scaleY(.12)}
+}
+
+.spot.busy .person{animation:bob 1.7s ease-in-out infinite}
 @keyframes bob{
   0%,100%{transform:translateX(-50%) translateY(0)}
-  50%{transform:translateX(-50%) translateY(-2.5px)}
+  50%{transform:translateX(-50%) translateY(-3px)}
+}
+.person.hop{animation:hop .6s cubic-bezier(.3,1.5,.5,1) !important}
+@keyframes hop{
+  0%,100%{transform:translateX(-50%) translateY(0)}
+  35%{transform:translateX(-50%) translateY(-13px)}
+  60%{transform:translateX(-50%) translateY(0)}
+  75%{transform:translateX(-50%) translateY(-4px)}
 }
 
 /* 名札 */
 .plate-name{
-  margin-top:7px;
+  margin-top:6px;
   font-size:12.5px;
   letter-spacing:.06em;
   line-height:1.35;
@@ -344,24 +376,28 @@ header.plate{
 /* 手元の作業チップ */
 .doing{
   position:absolute;
-  left:50%;top:-16px;
+  left:50%;top:-17px;
   transform:translateX(-50%);
   font-size:10.5px;
   letter-spacing:.08em;
   white-space:nowrap;
+  max-width:154px;
+  overflow:hidden;
+  text-overflow:ellipsis;
   padding:2px 8px;
   background:var(--panel);
   border:1px solid var(--lamp);
   color:var(--ink);
   opacity:0;
   transition:opacity .3s ease;
+  z-index:3;
 }
 .spot.doing-on .doing{opacity:1}
 
 /* 決裁印 */
 .stamp{
   position:absolute;
-  right:-6px;top:-14px;
+  right:-8px;top:-16px;
   width:34px;height:34px;
   border:2px solid var(--stamp);
   border-radius:50%;
@@ -372,6 +408,7 @@ header.plate{
   opacity:0;
   transform:scale(1.7) rotate(-14deg);
   pointer-events:none;
+  z-index:4;
 }
 .stamp.on{animation:stamped 2.2s ease forwards}
 @keyframes stamped{
@@ -453,6 +490,7 @@ header.plate{
 .entries{
   flex:1;
   overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
   padding:4px 0 8px;
 }
 .entry{
@@ -488,6 +526,7 @@ button{
   font-size:11.5px;
   letter-spacing:.08em;
   padding:5px 11px;
+  min-height:32px;
   background:transparent;
   color:var(--ink);
   border:1px solid var(--wall);
@@ -514,6 +553,26 @@ footer.legend{
   letter-spacing:.04em;
 }
 footer.legend b{color:var(--ink-2);font-weight:600}
+
+/* ---------------------------------------------------------- 小さい画面 */
+@media (max-width:640px){
+  .sheet{padding:14px 12px 28px;gap:13px}
+  header.plate{gap:10px 18px;padding-bottom:11px}
+  .plate h1{font-size:22px}
+  .plate .eyebrow{font-size:9.5px;letter-spacing:.26em}
+  .plate .sub{font-size:11.5px}
+  .plate .spacer{display:none}
+  .counters{gap:16px;flex:1 1 auto}
+  .counter b{font-size:19px}
+  .counter span{font-size:9px;letter-spacing:.1em}
+  .ledger{min-height:0;max-height:none}
+  .entries{max-height:340px}
+  .entry{grid-template-columns:44px 1fr;gap:8px;padding:6px 12px}
+  .entry p{font-size:12px}
+  .controls{padding:10px 12px}
+  button{min-height:36px;padding:6px 12px;font-size:12px}
+  footer.legend{gap:5px 14px;font-size:10.5px}
+}
 
 @media (prefers-reduced-motion: reduce){
   *{animation:none !important;transition-duration:.01ms !important}
@@ -572,33 +631,109 @@ footer.legend b{color:var(--ink-2);font-weight:600}
 "use strict";
 
 /* ============================================================
-   1. 間取り
+   1. キャラクター
+   顔の作りは全員同じ。持ち物だけを変えて、誰の席か分かるようにする。
    ============================================================ */
 
-const PEOPLE = [
-  {id:"秘書役",             name:"秘書役",         role:"窓口",       x:290, y:250},
-  {id:"客員",               name:"客員席",         role:"その他の担当", x:366, y:118},
-  {id:"coconala-kantei",    name:"鑑定担当",       role:"下書き",     x:622, y:172},
-  {id:"coconala-kantei-checker", name:"チェック担当", role:"点検",     x:862, y:172},
-  {id:"coconala-researcher",name:"リサーチ担当",   role:"外部調査",   x:622, y:344},
-  {id:"coconala-kantei-reviewer", name:"レビュー担当", role:"初見",   x:862, y:344},
-  {id:"coconala-writer",    name:"出品ページ担当", role:"文面",       x:622, y:516},
-];
-
-const SHELVES = [
-  {id:"日誌棚", cap:"日誌棚",   sub:"secretary/",            x:110, y:520},
-  {id:"inbox",  cap:"inbox",    sub:"迷った案件はここ",       x:300, y:520},
-  {id:"成果物棚", cap:"成果物棚", sub:"departments/coconala/", x:872, y:516},
-];
-
-// 人でも棚でもない、書類の行き先
-const POINTS = {
-  "依頼主": {x:112, y:250},
-  "外":     {x:742, y:52},
-  "人":     {x:112, y:250},
+const GEAR = {
+  // 秘書役：ヘッドセット。電話と来客を受ける係
+  headset:
+    '<path class="gearline" d="M15 23a17 17 0 0 1 34 0"/>' +
+    '<rect class="gear" x="9" y="21" width="7" height="11" rx="3.5"/>' +
+    '<rect class="gear" x="48" y="21" width="7" height="11" rx="3.5"/>',
+  // 鑑定担当：筆
+  brush:
+    '<rect class="gear" x="52" y="31" width="4.4" height="15" rx="2.2"/>' +
+    '<path class="gear" d="M52 46h4.4l-2.2 6.5z"/>',
+  // チェック担当：虫眼鏡
+  glass:
+    '<circle class="gearline" cx="54" cy="31" r="7"/>' +
+    '<path class="gearline" d="M54 39v8"/>',
+  // レビュー担当：帽子。外から来たお客様の目で読む
+  cap:
+    '<path class="gear" d="M15 15q17 -15 34 0z"/>' +
+    '<rect class="gear" x="11" y="13" width="42" height="4.6" rx="2.3"/>',
+  // リサーチ担当：双眼鏡。外を見に行く係
+  binocular:
+    '<rect class="gear" x="19" y="6" width="11" height="10" rx="3.4"/>' +
+    '<rect class="gear" x="34" y="6" width="11" height="10" rx="3.4"/>' +
+    '<rect class="gear" x="29" y="9" width="6" height="3.4" rx="1.2"/>',
+  // 出品ページ担当：耳にはさんだ鉛筆
+  pencil:
+    '<rect class="gear" x="47" y="10" width="4" height="15" rx="1.8" transform="rotate(18 49 17)"/>' +
+    '<path class="gear" d="M51.5 24.5l1.6 5.2-4.6-2.6z"/>',
+  // 客員席：まだ誰の席か決まっていない
+  question:
+    '<text class="q" x="47" y="16">？</text>',
+  // 依頼主：依頼を持って外から来る
+  letter:
+    '<rect class="bag" x="45.5" y="41" width="16" height="12" rx="1.8"/>' +
+    '<path class="gearline" d="M46.5 42.5l7 5 7-5"/>',
+  none: "",
 };
 
+function charSvg(color, gear){
+  return (
+    '<svg class="char" viewBox="0 0 64 64" style="--c:' + color + '" aria-hidden="true">' +
+      '<circle class="arm" cx="14" cy="52" r="5.4"/>' +
+      '<circle class="arm" cx="50" cy="52" r="5.4"/>' +
+      '<rect class="body" x="16" y="40" width="32" height="22" rx="11"/>' +
+      '<circle class="head" cx="32" cy="24" r="18"/>' +
+      (gear || "") +
+      '<ellipse class="cheek" cx="19.5" cy="31" rx="4.2" ry="2.5"/>' +
+      '<ellipse class="cheek" cx="44.5" cy="31" rx="4.2" ry="2.5"/>' +
+      '<g class="eyes-open">' +
+        '<circle class="eye" cx="25.5" cy="25" r="3.1"/>' +
+        '<circle class="eye" cx="38.5" cy="25" r="3.1"/>' +
+      '</g>' +
+      '<g class="eyes-shut">' +
+        '<path class="lid" d="M22.5 25.5q3 3.2 6 0"/>' +
+        '<path class="lid" d="M35.5 25.5q3 3.2 6 0"/>' +
+      '</g>' +
+      '<path class="mouth" d="M29 32.5q3 3 6 0"/>' +
+    '</svg>'
+  );
+}
+
+/* ============================================================
+   2. 間取り
+   広い画面は横並び、狭い画面は縦並びに組み替える。
+   座標は [横のとき, 縦のとき] の二組を持たせる。
+   ============================================================ */
+
+const SIZE = { wide:[1000,640], tall:[430,952] };
+
+const PEOPLE = [
+  {id:"秘書役", name:"秘書役", role:"窓口", color:"#7C9BB8", gear:GEAR.headset,
+   at:{wide:[290,250], tall:[300,150]}},
+  {id:"客員", name:"客員席", role:"その他の担当", color:"#9AA5A0", gear:GEAR.question,
+   at:{wide:[366,118], tall:[300,288]}},
+  {id:"coconala-kantei", name:"鑑定担当", role:"下書き", color:"#9B8FC7", gear:GEAR.brush,
+   at:{wide:[622,172], tall:[110,600]}},
+  {id:"coconala-kantei-checker", name:"チェック担当", role:"点検", color:"#6FB5A0", gear:GEAR.glass,
+   at:{wide:[862,172], tall:[300,600]}},
+  {id:"coconala-researcher", name:"リサーチ担当", role:"外部調査", color:"#6FA3D1", gear:GEAR.binocular,
+   at:{wide:[622,344], tall:[110,720]}},
+  {id:"coconala-kantei-reviewer", name:"レビュー担当", role:"初見", color:"#E0A26B", gear:GEAR.cap,
+   at:{wide:[862,344], tall:[300,720]}},
+  {id:"coconala-writer", name:"出品ページ担当", role:"文面", color:"#D98BA6", gear:GEAR.pencil,
+   at:{wide:[622,516], tall:[110,840]}},
+];
+
+const CLIENT = {id:"依頼主", name:"依頼主", role:"人", color:"#D9B44A", gear:GEAR.letter,
+  at:{wide:[112,250], tall:[110,150]}};
+
+const SHELVES = [
+  {id:"日誌棚", cap:"日誌棚", sub:"secretary/",
+   at:{wide:[110,520], tall:[108,400]}},
+  {id:"inbox", cap:"inbox", sub:"迷った案件はここ",
+   at:{wide:[300,520], tall:[300,400]}},
+  {id:"成果物棚", cap:"成果物棚", sub:"departments/coconala/",
+   at:{wide:[872,516], tall:[300,840]}},
+];
+
 const stage = document.getElementById("stage");
+const plan = document.getElementById("plan");
 
 function el(tag, cls, html){
   const n = document.createElement(tag);
@@ -606,74 +741,60 @@ function el(tag, cls, html){
   if(html !== undefined) n.innerHTML = html;
   return n;
 }
-function place(node, x, y){ node.style.left = x + "px"; node.style.top = y + "px"; return node; }
 
-// 部屋・壁・出入口
-const room = el("div","room");
-Object.assign(room.style,{left:"500px",top:"36px",width:"480px",height:"568px"});
-room.append(
-  el("div","room-name","ココナラ部門"),
-  el("div","room-note","鑑定 → 点検 → 初見 → 引き渡し")
-);
-stage.append(room);
+// 動かない造作。[左, 上, 幅, 高さ] を画面の広さごとに持つ。null なら出さない
+const FIXTURES = [];
+function fixture(node, boxes){
+  stage.append(node);
+  FIXTURES.push({node, boxes});
+  return node;
+}
 
 const reception = el("div","room");
-Object.assign(reception.style,{left:"20px",top:"36px",width:"440px",height:"568px"});
 reception.append(
   el("div","room-name","受付・秘書席"),
   el("div","room-note","外からの依頼は、すべてここを通る")
 );
-stage.append(reception);
+fixture(reception, {wide:[20,36,440,568], tall:[8,26,414,428]});
 
-// 入口（左の壁の切れ目）
-const door = el("div","opening");
-Object.assign(door.style,{left:"14px",top:"216px",width:"14px",height:"70px"});
-stage.append(door);
-stage.append(place(el("div","tag","入口"), 34, 330));
+const deptRoom = el("div","room");
+deptRoom.append(
+  el("div","room-name","ココナラ部門"),
+  el("div","room-note","鑑定 → 点検 → 初見 → 引き渡し")
+);
+fixture(deptRoom, {wide:[500,36,480,568], tall:[8,490,414,452]});
 
-// 打合せ卓
+// 入口
+fixture(el("div","opening"), {wide:[14,216,14,70], tall:null});
+fixture(el("div","opening vert"), {wide:null, tall:[2,116,14,68]});
+fixture(el("div","tag","入口"), {wide:[34,330,null,null], tall:[20,192,null,null]});
+
+// 窓（外部の資料を見に行く先）
+fixture(el("div","opening"), {wide:[680,30,124,12], tall:[150,484,120,12]});
+fixture(el("div","tag","窓（外部の資料）"), {wide:[690,8,null,null], tall:[150,460,null,null]});
+
+// 打合せ卓。狭い画面では置かない
 const table = el("div","furniture","打合せ卓");
-Object.assign(table.style,{left:"170px",top:"412px",width:"186px",height:"74px",borderRadius:"40px"});
-stage.append(table);
+table.style.borderRadius = "40px";
+fixture(table, {wide:[170,412,186,74], tall:null});
 
-// 掲示板（この会社の決まり）
+// 掲示板
 const board = el("div","board");
-board.style.left = "352px";
-board.style.top = "406px";
 board.innerHTML =
   "<h3>全社ルール</h3>" +
   "<ol><li>言われなくても記録する</li><li>上書きせず追記のみ</li>" +
   "<li>同じ日付なら追記</li><li>窓口は秘書役だけ</li><li>迷ったら inbox</li></ol>";
-stage.append(board);
-
-// 部門室の窓（外を見に行く先）
-const win = el("div","opening");
-Object.assign(win.style,{left:"680px",top:"30px",width:"124px",height:"12px"});
-stage.append(win);
-stage.append(place(el("div","tag","窓（外部の資料）"), 690, 8));
-
-// 依頼主
-const client = el("div","spot");
-client.id = "spot-依頼主";
-client.style.left = POINTS["依頼主"].x + "px";
-client.style.top = POINTS["依頼主"].y + "px";
-client.innerHTML =
-  '<div class="desk"><div class="person"><i class="head"></i><i class="body"></i></div></div>' +
-  '<div class="plate-name">依頼主</div><div class="plate-role">人</div><div class="rule"></div>';
-stage.append(client);
+fixture(board, {wide:[352,406,null,null], tall:[110,290,null,null]});
 
 // 席
 const spots = {};
-for(const p of PEOPLE){
+function makeSpot(p){
   const s = el("div","spot");
-  s.id = "spot-" + p.id;
-  s.style.left = p.x + "px";
-  s.style.top = p.y + "px";
   s.innerHTML =
     '<div class="desk">' +
       '<div class="doing"></div>' +
       '<div class="stamp mincho">済</div>' +
-      '<div class="person"><i class="head"></i><i class="body"></i></div>' +
+      '<div class="person">' + charSvg(p.color, p.gear) + '</div>' +
     '</div>' +
     '<div class="plate-name">' + p.name + '</div>' +
     '<div class="plate-role">' + p.role + '</div>' +
@@ -681,13 +802,13 @@ for(const p of PEOPLE){
   stage.append(s);
   spots[p.id] = {node:s, meta:p, timer:null, chipTimer:null};
 }
+for(const p of PEOPLE) makeSpot(p);
+makeSpot(CLIENT);
 
 // 棚
 const shelves = {};
 for(const sh of SHELVES){
   const n = el("div","shelf");
-  n.style.left = sh.x + "px";
-  n.style.top = sh.y + "px";
   n.innerHTML =
     '<div class="box"><i></i><i></i><i></i><i></i><i></i></div>' +
     '<div class="cap">' + sh.cap + '<small>' + sh.sub + '</small></div>';
@@ -695,21 +816,57 @@ for(const sh of SHELVES){
   shelves[sh.id] = {node:n, meta:sh, timer:null};
 }
 
+// 人でも棚でもない、書類の行き先
+const POINTS = {
+  "外": {wide:[742,52], tall:[210,470]},
+  "人": {wide:[112,250], tall:[110,150]},
+};
+
 /* ============================================================
-   2. 拡大縮小（平面図は 1000×640 の座標で書いてある）
+   3. 画面の広さに合わせて組み替える
    ============================================================ */
 
-const plan = document.getElementById("plan");
-function fit(){
-  const w = plan.clientWidth;
-  const s = Math.min(1, w / 1000);
-  stage.style.transform = "scale(" + s + ")";
-  plan.style.height = (640 * s) + "px";
+let mode = "wide";
+
+function put(node, at){
+  node.style.left = at[mode][0] + "px";
+  node.style.top = at[mode][1] + "px";
 }
-window.addEventListener("resize", fit);
+
+function layout(){
+  const w = plan.clientWidth;
+  const next = w < 760 ? "tall" : "wide";
+  const changed = next !== mode;
+  mode = next;
+
+  const [sw, sh] = SIZE[mode];
+  stage.style.width = sw + "px";
+  stage.style.height = sh + "px";
+
+  if(changed || !layout.done){
+    for(const f of FIXTURES){
+      const box = f.boxes[mode];
+      if(!box){ f.node.style.display = "none"; continue; }
+      f.node.style.display = "";
+      f.node.style.left = box[0] + "px";
+      f.node.style.top = box[1] + "px";
+      if(box[2] != null) f.node.style.width = box[2] + "px";
+      if(box[3] != null) f.node.style.height = box[3] + "px";
+    }
+    for(const id in spots) put(spots[id].node, spots[id].meta.at);
+    for(const id in shelves) put(shelves[id].node, shelves[id].meta.at);
+    layout.done = true;
+  }
+
+  const s = Math.min(1, w / sw);
+  stage.style.transform = "scale(" + s + ")";
+  plan.style.height = (sh * s) + "px";
+}
+window.addEventListener("resize", layout);
+window.addEventListener("orientationchange", () => setTimeout(layout, 250));
 
 /* ============================================================
-   3. 動き
+   4. 動き
    ============================================================ */
 
 const NAMES = Object.fromEntries(PEOPLE.map(p => [p.id, p.name]));
@@ -718,10 +875,10 @@ NAMES["依頼主"] = "依頼主";
 function nameOf(id){ return NAMES[id] || id || "担当"; }
 
 function coord(id){
-  if(spots[id]) return {x:spots[id].meta.x, y:spots[id].meta.y};
-  if(shelves[id]) return {x:shelves[id].meta.x, y:shelves[id].meta.y};
-  if(POINTS[id]) return POINTS[id];
-  return {x:500, y:320};
+  if(spots[id]) return spots[id].meta.at[mode];
+  if(shelves[id]) return shelves[id].meta.at[mode];
+  if(POINTS[id]) return POINTS[id][mode];
+  return [SIZE[mode][0] / 2, SIZE[mode][1] / 2];
 }
 
 let busyCount = 0;
@@ -731,13 +888,13 @@ function setBusy(id, on, holdMs){
   const was = s.node.classList.contains("busy");
   if(on){
     s.node.classList.add("busy");
-    if(!was){ busyCount++; }
+    if(!was) busyCount++;
     clearTimeout(s.timer);
     if(holdMs) s.timer = setTimeout(() => setBusy(id, false), holdMs);
   }else{
     s.node.classList.remove("busy");
     s.node.classList.remove("doing-on");
-    if(was){ busyCount = Math.max(0, busyCount - 1); }
+    if(was) busyCount = Math.max(0, busyCount - 1);
     clearTimeout(s.timer);
   }
   document.getElementById("c-busy").textContent = busyCount;
@@ -759,6 +916,12 @@ function stamp(id){
   n.classList.remove("on");
   void n.offsetWidth;
   n.classList.add("on");
+  // 報告が通ったので、ひとつ跳ねる
+  const person = s.node.querySelector(".person");
+  person.classList.remove("hop");
+  void person.offsetWidth;
+  person.classList.add("hop");
+  setTimeout(() => person.classList.remove("hop"), 620);
 }
 
 function hitShelf(id){
@@ -772,14 +935,14 @@ function hitShelf(id){
 function fly(fromId, toId, label){
   const a = coord(fromId), b = coord(toId);
   const paper = el("div","paper", label || "書類");
-  paper.style.transform = "translate(" + (a.x - 48) + "px," + (a.y - 18) + "px) rotate(-3deg)";
+  paper.style.transform = "translate(" + (a[0] - 48) + "px," + (a[1] - 18) + "px) rotate(-3deg)";
   paper.style.opacity = "0";
   stage.append(paper);
   const ms = Math.max(260, 850 / speed);
   requestAnimationFrame(() => {
     paper.style.transition = "transform " + ms + "ms cubic-bezier(.38,.02,.2,1), opacity 220ms ease";
     paper.style.opacity = "1";
-    paper.style.transform = "translate(" + (b.x - 48) + "px," + (b.y - 18) + "px) rotate(2deg)";
+    paper.style.transform = "translate(" + (b[0] - 48) + "px," + (b[1] - 18) + "px) rotate(2deg)";
   });
   setTimeout(() => {
     paper.style.opacity = "0";
@@ -789,22 +952,21 @@ function fly(fromId, toId, label){
 }
 
 /* ============================================================
-   4. 日誌
+   5. 日誌
    ============================================================ */
 
 const entries = document.getElementById("entries");
 let reqCount = 0, doneCount = 0;
 
-function stampTime(iso){
-  const d = iso ? new Date(iso) : new Date();
-  if(isNaN(d)) return "--:--";
+function now(){
+  const d = new Date();
   return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
 }
 
 function write(kind, text, who){
   const e = el("div","entry now");
   e.innerHTML =
-    '<time class="mono">' + stampTime() + '</time>' +
+    '<time class="mono">' + now() + '</time>' +
     '<div><span class="k">' + kind + '</span><p>' +
       (who ? '<span class="who">' + who + '</span>　' : '') + text +
     '</p></div>';
@@ -815,7 +977,7 @@ function write(kind, text, who){
 }
 
 /* ============================================================
-   5. 出来事を絵にする
+   6. 出来事を絵にする
    ============================================================ */
 
 // いま誰が動いているか。道具の記録には担当名が付かないので、
@@ -824,7 +986,6 @@ const activeStack = [];
 function currentActor(){
   return activeStack.length ? activeStack[activeStack.length - 1] : "秘書役";
 }
-
 function resolve(id){
   return spots[id] ? id : (id ? "客員" : "秘書役");
 }
@@ -876,7 +1037,7 @@ function apply(ev){
   if(kind === "外出"){
     const who = resolve(ev.actor || currentActor());
     setBusy(who, true);
-    doing(who, "外部を見に行った");
+    doing(who, "外を見に行った");
     fly(who, "外", ev.note || "照会");
     write("外出", ev.note || "窓の外の資料を見に行った", nameOf(who));
     return;
@@ -885,7 +1046,7 @@ function apply(ev){
   if(kind === "調べ物"){
     const who = resolve(ev.actor || currentActor());
     setBusy(who, true, 5000 / speed);
-    doing(who, ev.path ? "読む" : ((ev.tool || "") + " で調べ物"));
+    doing(who, ev.path ? "読んでいる" : "調べ物");
     write("調べ物", ev.path ? (ev.path + " を読んだ") : ((ev.tool || "資料") + " を当たった"), nameOf(who));
     return;
   }
@@ -901,7 +1062,7 @@ function apply(ev){
   if(kind === "手作業"){
     const who = resolve(ev.actor || currentActor());
     setBusy(who, true, 3600 / speed);
-    doing(who, ev.note || (ev.tool || "手作業"));
+    doing(who, ev.tool ? (ev.tool + " を動かす") : "手を動かしている");
     write("手作業", ev.note || ((ev.tool || "道具") + " を動かした"), nameOf(who));
     return;
   }
@@ -943,11 +1104,11 @@ function apply(ev){
     return;
   }
 
-  write(kind || "記録", ev.note || JSON.stringify(ev));
+  write(kind || "記録", ev.note || "");
 }
 
 /* ============================================================
-   6. デモ運転
+   7. デモ運転
    ココナラ部門に書いてある鑑定の流れを、そのまま動かしている。
    ============================================================ */
 
@@ -998,7 +1159,7 @@ function runDemo(){
   clearTimeout(demoTimer);
   if(paused) return;
   const ev = DEMO[demoIndex];
-  if(!ev) { demoIndex = 0; demoTimer = setTimeout(runDemo, 800); return; }
+  if(!ev){ demoIndex = 0; demoTimer = setTimeout(runDemo, 800); return; }
   demoTimer = setTimeout(() => {
     if(live) return;
     if(ev.kind === "__loop"){
@@ -1012,7 +1173,7 @@ function runDemo(){
 }
 
 /* ============================================================
-   7. 実ログ
+   8. 実ログ
    フックが office/activity.jsonl に書いたものを拾う。
    ファイルを直接開いたときは読めないので、そのままデモを続ける。
    ============================================================ */
@@ -1066,7 +1227,7 @@ async function poll(){
 }
 
 /* ============================================================
-   8. 操作
+   9. 操作
    ============================================================ */
 
 document.getElementById("btn-pause").addEventListener("click", (e) => {
@@ -1097,13 +1258,9 @@ document.getElementById("btn-restart").addEventListener("click", () => {
   if(!live) runDemo();
 });
 
-function tick(){
-  const d = new Date();
-  document.getElementById("clock").textContent =
-    String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
-}
+function tick(){ document.getElementById("clock").textContent = now(); }
 
-fit();
+layout();
 tick();
 setInterval(tick, 10000);
 runDemo();
