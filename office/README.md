@@ -45,6 +45,24 @@
 
 ## 開きかた
 
+### はじめて動かすとき
+
+このリポジトリで最初に Claude Code を立ち上げたとき、**フックを入れてよいか一度聞かれる**。
+`.claude/settings.json` に書いたフックは、承認するまで動かない。承認すると、
+それ以降のやり取りが `office/activity.jsonl` に記録されるようになる。
+
+聞かれずに記録も始まらない場合は、承認がまだか、`python3` が見つかっていない。
+`echo '{"hook_event_name":"SessionStart"}' | python3 .claude/hooks/office_log.py` を
+手元で走らせて、`office/activity.jsonl` に1行増えるかどうかで切り分けられる。
+
+### 毎日の動かしかた
+
+1. `python3 office/server.py` を走らせておく（つけっぱなしでよい）
+2. `http://localhost:8765/` を開いておく
+3. いつもどおり Claude Code に頼む
+
+右上が「実ログ」になっていれば、つながっている。席の灯りが、そのまま作業の状況になる。
+
 ### そのまま開く（デモ運転）
 
 `office/index.html` をブラウザで開く。鑑定の流れ（下書き → 点検・初見 → 引き渡し）が
