@@ -163,6 +163,19 @@ def check_kata_consistency() -> None:
             f"{KATA}: 段落の目安の合計 {total}字 が、帯 {band_lo}〜{band_hi}字 の外です"
         )
 
+    # 許容幅をすべて上限（下限）に寄せると、合計の帯を外れることがある。
+    # 各段落が許容幅に収まっていても合計が帯を外れる状態を、型が説明しているか見る。
+    sum_hi = sum(r[3] for r in rows)
+    sum_lo = sum(r[2] for r in rows)
+    if sum_hi > band_hi or sum_lo < band_lo:
+        if "合計の帯が優先" not in text:
+            err(
+                f"{KATA}: 許容幅の合計（{sum_lo}〜{sum_hi}字）が帯"
+                f"（{band_lo}〜{band_hi}字）からはみ出します。"
+                "各段落が許容幅に収まっても合計が帯を外れるため、"
+                "どちらが優先するかを型に明記してください（「合計の帯が優先」）"
+            )
+
 
 # ------------------------------------------------------- 4. 英単語の混入（警告）
 FRONTMATTER = re.compile(r"\A---\n.*?\n---\n", re.S)
