@@ -143,12 +143,12 @@ def check_kata_consistency() -> None:
     if nums != list(range(1, len(nums) + 1)):
         err(f"{KATA}: 段落番号が連番になっていません（{nums}）")
 
-    # 許容幅が目安の ±20% と食い違っていないか（端数は ±5字まで許容）
+    # 許容幅が目安の ±10% と食い違っていないか（端数は ±5字まで許容）
     for num, target, lo, hi in rows:
-        want_lo, want_hi = round(target * 0.8), round(target * 1.2)
+        want_lo, want_hi = round(target * 0.9), round(target * 1.1)
         if abs(lo - want_lo) > 5 or abs(hi - want_hi) > 5:
             err(
-                f"{KATA}: 段落{num} の許容幅 {lo}〜{hi} が目安 {target}字 の±20%"
+                f"{KATA}: 段落{num} の許容幅 {lo}〜{hi} が目安 {target}字 の±10%"
                 f"（{want_lo}〜{want_hi}）と合いません"
             )
 
