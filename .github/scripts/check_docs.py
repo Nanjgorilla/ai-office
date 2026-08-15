@@ -177,6 +177,134 @@ def check_kata_consistency() -> None:
             )
 
 
+# ------------------------------------------- 5. 型と担当のあいだの食い違い（エラー）
+AGENTS = [
+    ".claude/agents/coconala-kantei.md",
+    ".claude/agents/coconala-kantei-checker.md",
+]
+
+PARA_COUNT_CITE = re.compile(r"型の(\d+)段落")
+TOLERANCE = re.compile(r"目安の\*\*±(\d+)%\*\*")
+TOLERANCE_CITE = re.compile(r"許容幅は目安の±(\d+)%")
+BAND_CITE = re.compile(r"合計\s*(\d[\d,]*)〜(\d[\d,]*)字")
+HALF_KATA = re.compile(r"吉凶が相半ばする数（\d+）\**\s*：\s*([0-9,\s]+)")
+HALF_CITE = re.compile(r"相半ばの数\**\s*（([0-9０-９・\s]+)）")
+
+Z2H = str.maketrans("０１２３４５６７８９", "0123456789")
+
+
+def check_kata_vs_agents() -> None:
+    """型が決めた数字を、担当の手順書が古いまま引用していないか。
+
+    型を直したのに担当への反映が漏れる、という食い違いが実際に3回起きた。
+    節やファイルをまたぐため、ファイル単位の点検では拾えない。
+    """
+    kata = read(KATA)
+    if kata is None:
+        return
+
+    facts: dict[str, object] = {}
+
+    n_para = len([ln for ln in kata.splitlines() if PARA_ROW.match(ln)])
+    if n_para:
+        facts["段落数"] = n_para
+
+    m = TOLERANCE.search(kata)
+    if m:
+        facts["許容幅の割合"] = int(m.group(1))
+
+    m = BAND.search(kata)
+    if m:
+        facts["帯"] = tuple(int(x.replace(",", "")) for x in m.groups())
+
+    m = HALF_KATA.search(kata)
+    if m:
+        facts["相半ばの数"] = {int(x) for x in re.findall(r"\d+", m.group(1))}
+
+    for rel in AGENTS:
+        text = read(rel)
+        if text is None:
+            continue
+        body = strip_records(text)
+
+        for m in PARA_COUNT_CITE.finditer(body):
+            if "段落数" in facts and int(m.group(1)) != facts["段落数"]:
+                err(
+                    f"{rel}: 「型の{m.group(1)}段落」とありますが、"
+                    f"型の段落は{facts['段落数']}です"
+                )
+
+        for m in TOLERANCE_CITE.finditer(body):
+            if "許容幅の割合" in facts and int(m.group(1)) != facts["許容幅の割合"]:
+                err(
+                    f"{rel}: 許容幅を±{m.group(1)}%としていますが、"
+                    f"型は±{facts['許容幅の割合']}%です"
+                )
+
+        for m in BAND_CITE.finditer(body):
+            got = tuple(int(x.replace(",", "")) for x in m.groups())
+            if "帯" in facts and got != facts["帯"]:
+                err(
+                    f"{rel}: 合計の帯を{got[0]:,}〜{got[1]:,}字としていますが、"
+                    f"型は{facts['帯'][0]:,}〜{facts['帯'][1]:,}字です"
+                )
+
+        for m in HALF_CITE.finditer(body):
+            got = {int(x) for x in m.group(1).translate(Z2H).split("・") if x.strip()}
+            if "相半ばの数" in facts and got != facts["相半ばの数"]:
+                err(
+                    f"{rel}: 相半ばの数を{sorted(got)}としていますが、"
+                    f"型は{sorted(facts['相半ばの数'])}です"
+                )
+
+
+# ------------------------------------- 6. 廃止した書き方が残っていないか（エラー）
+# 型が「使わない」と決めたもの。運用部分（記録・追記ログ以外）に出たらエラー。
+RETIRED = [
+    (re.compile(r"\d+\s*〜?\s*\d*\s*歳"), "各格に年齢を割り当てない（型2節）"),
+    (re.compile(r"(主運|副運|前運|後運)"), "この呼称は使わない（型0節）"),
+]
+
+RECORD_HEADING = re.compile(r"^#+.*(記録|廃止|追記ログ|削除|直した|過去|失敗|経緯|訂正)")
+ANY_HEADING = re.compile(r"^#+\s")
+
+# 廃止したものは、記録として書き残すことになっている。
+# 見出しだけでは記録か指示かを判別できないため、文そのものの書き方でも見る。
+# 完全ではない。「以前は◯歳としていた」と書けば通るので、人の点検は要る。
+RECORD_SENTENCE = re.compile(
+    r"(廃止|使わない|使わなくなった|やめ[たるる]?|以前|かつて|過去|取り下げ|"
+    r"差し替え|誤り|直した|していた|だった|残っていた|書いていた|見直す)"
+)
+
+
+def strip_records(text: str) -> str:
+    """記録・廃止・追記ログの節と、引用ブロックを落とす。
+
+    廃止したものは、記録として書き残すことになっている。
+    記録に出るのは正しいので、指示として書かれている箇所だけを見る。
+    """
+    out, skipping = [], False
+    for ln in text.splitlines():
+        if ANY_HEADING.match(ln):
+            skipping = bool(RECORD_HEADING.match(ln))
+        if skipping or ln.lstrip().startswith(">") or ln.lstrip().startswith("|"):
+            continue
+        if RECORD_SENTENCE.search(ln):
+            continue
+        out.append(ln)
+    return "\n".join(out)
+
+
+def check_retired_wording() -> None:
+    for rel in [KATA, *AGENTS]:
+        text = read(rel)
+        if text is None:
+            continue
+        for pat, why in RETIRED:
+            for m in pat.finditer(strip_records(text)):
+                err(f"{rel}: 「{m.group(0)}」が指示として残っています — {why}")
+
+
 # ------------------------------------------------------- 4. 英単語の混入（警告）
 FRONTMATTER = re.compile(r"\A---\n.*?\n---\n", re.S)
 CODE_SPAN = re.compile(r"`[^`]*`")
@@ -227,6 +355,8 @@ def main() -> int:
     check_changelog_exists()
     check_kata_consistency()
     check_no_stray_english()
+    check_kata_vs_agents()
+    check_retired_wording()
     if len(sys.argv) > 1 and sys.argv[1]:
         check_changelog_updated(sys.argv[1])
 
