@@ -123,6 +123,7 @@ def check_changelog_updated(base_ref: str) -> None:
 # ------------------------------------------------------------ 3. 型の内部整合
 PARA_ROW = re.compile(r"^\|\s*(\d+)\s*\|[^|]*\|\s*(\d+)字\s*\|\s*(\d+)〜(\d+)\s*\|")
 BAND = re.compile(r"合計は\s*\*?\*?([\d,]+)〜([\d,]+)字")
+FUKI = re.compile(r"付記は\s*\*?\*?(\d+)字（(\d+)〜(\d+)）")
 
 
 def check_kata_consistency() -> None:
@@ -157,7 +158,7 @@ def check_kata_consistency() -> None:
         err(f"{KATA}: 合計の帯（合計は◯〜◯字）が見つかりません")
         return
     band_lo, band_hi = (int(x.replace(",", "")) for x in m.groups())
-    total = sum(r[1] for r in rows)
+    total = sum(r[1] for r in rows) + (int(FUKI.search(text).group(1)) if FUKI.search(text) else 0)
     if not band_lo <= total <= band_hi:
         err(
             f"{KATA}: 段落の目安の合計 {total}字 が、帯 {band_lo}〜{band_hi}字 の外です"
@@ -165,8 +166,17 @@ def check_kata_consistency() -> None:
 
     # 許容幅をすべて上限（下限）に寄せると、合計の帯を外れることがある。
     # 各段落が許容幅に収まっていても合計が帯を外れる状態を、型が説明しているか見る。
-    sum_hi = sum(r[3] for r in rows)
-    sum_lo = sum(r[2] for r in rows)
+    # 付記（性別の断り・締めの一文）は段落表の外にあるが、本文の字数に入る。
+    # 枠を置かないと、段落が全部収まっていても合計が帯を超える。
+    fu = FUKI.search(text)
+    fu_mid, fu_lo, fu_hi = (
+        (int(fu.group(1)), int(fu.group(2)), int(fu.group(3))) if fu else (0, 0, 0)
+    )
+    if not fu:
+        err(f"{KATA}: 付記の字数の枠（付記は◯字（◯〜◯））が見つかりません")
+
+    sum_hi = sum(r[3] for r in rows) + fu_hi
+    sum_lo = sum(r[2] for r in rows) + fu_lo
     if sum_hi > band_hi or sum_lo < band_lo:
         if "合計の帯が優先" not in text:
             err(
