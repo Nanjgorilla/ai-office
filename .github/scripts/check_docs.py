@@ -29,6 +29,8 @@ LOGGED_FILES = [
     ".claude/agents/coconala-kantei-reviewer.md",
     ".claude/agents/coconala-researcher.md",
     ".claude/agents/coconala-writer.md",
+    "departments/note/CLAUDE.md",
+    "departments/note/記事の型.md",
 ]
 
 # 免責文の冒頭。鑑定の型.md 以外でこれが出たら、鑑定文が commit されたということ
