@@ -54,6 +54,9 @@ def to_plain(md: str) -> tuple[str, list[str], list[str]]:
     out: list[str] = []
 
     for line in md.split("\n"):
+        if line.strip().startswith("```"):
+            continue                              # 囲みの記号。noteには要らない
+        line = line.replace("**", "")             # 太字。見出しと引用の中にも出る
         if m := re.match(r"^#{3,4} (.+)$", line):
             text = m.group(1).strip()
             headings.append(text)
@@ -65,7 +68,6 @@ def to_plain(md: str) -> tuple[str, list[str], list[str]]:
                 quotes.append(text)
             out.append(text)
             continue
-        line = line.replace("**", "")            # 太字の記号
         line = re.sub(r"^- ", "・", line)         # 箇条書き
         line = re.sub(r"^\*\*?", "", line)
         out.append(line)
@@ -76,7 +78,10 @@ def to_plain(md: str) -> tuple[str, list[str], list[str]]:
 
 
 def fence(body: str) -> str:
-    return f"```\n{body}\n```"
+    """中身より1つ長いバッククォートで囲う。入れ子で囲みが壊れないように。"""
+    longest = max((len(m) for m in re.findall(r"`+", body)), default=0)
+    tick = "`" * max(3, longest + 1)
+    return f"{tick}\n{body}\n{tick}"
 
 
 def convert(src: Path) -> str:
