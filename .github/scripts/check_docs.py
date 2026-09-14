@@ -29,6 +29,10 @@ LOGGED_FILES = [
     ".claude/agents/coconala-kantei-reviewer.md",
     ".claude/agents/coconala-researcher.md",
     ".claude/agents/coconala-writer.md",
+    "departments/crypto-news/CLAUDE.md",
+    "departments/crypto-news/一次情報の取材元.md",
+    "departments/crypto-news/動画プロンプトの型.md",
+    ".claude/agents/crypto-news-researcher.md",
 ]
 
 # 免責文の冒頭。鑑定の型.md 以外でこれが出たら、鑑定文が commit されたということ
