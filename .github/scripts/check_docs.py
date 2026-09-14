@@ -29,6 +29,13 @@ LOGGED_FILES = [
     ".claude/agents/coconala-kantei-reviewer.md",
     ".claude/agents/coconala-researcher.md",
     ".claude/agents/coconala-writer.md",
+    "departments/news/CLAUDE.md",
+    "departments/news/一次情報の型.md",
+    "departments/news/動画プロンプトの型.md",
+    ".claude/agents/news-researcher.md",
+    ".claude/agents/news-writer.md",
+    ".claude/agents/news-checker.md",
+    ".claude/agents/news-video-prompt.md",
 ]
 
 # 免責文の冒頭。鑑定の型.md 以外でこれが出たら、鑑定文が commit されたということ
@@ -175,8 +182,11 @@ ALLOWED = {
     "AI", "GitHub", "Markdown", "YYYY", "MM", "DD", "OK", "NG", "URL",
     "CLAUDE", "md", "coconala", "kantei", "checker", "reviewer",
     "researcher", "writer", "inbox", "departments", "secretary",
+    "news", "video", "prompt",
     # サブエージェントに与える道具の名前
     "Read", "Grep", "Glob", "Write", "WebSearch", "WebFetch",
+    # ニュースで固有名詞として出るもの
+    "BRICS", "NATO", "IMF", "TikTok", "Instagram",
 }
 
 LOG_HEADING = re.compile(r"^#+\s*(ルールの)?追記ログ", re.M)
@@ -186,14 +196,13 @@ def check_no_stray_english() -> None:
     """日本語の文中に英単語が紛れていないか。
 
     以前 especially / good / tension が本文に混ざっていたため。
+    追記ログを持つ文書（LOGGED_FILES）すべてを見る。
     コード表記・URL・フロントマターは除外する。
     追記ログも除外する。「especially を修正した」という記録が残るのが正しいので、
     ここを見ると直したこと自体が違反として挙がってしまう。
     判定を誤ることがあるので、失敗にはせず警告にとどめる。
     """
-    for rel in [KATA, "departments/coconala/CLAUDE.md"] + [
-        f for f in LOGGED_FILES if f.startswith(".claude/")
-    ]:
+    for rel in LOGGED_FILES:
         text = read(rel)
         if text is None:
             continue
