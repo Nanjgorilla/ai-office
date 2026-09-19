@@ -33,6 +33,10 @@ LOGGED_FILES = [
     "departments/crypto-news/一次情報の取材元.md",
     "departments/crypto-news/動画プロンプトの型.md",
     ".claude/agents/crypto-news-researcher.md",
+    "departments/odd-news/CLAUDE.md",
+    "departments/odd-news/取材元と真偽の確かめかた.md",
+    "departments/odd-news/動画プロンプトの型.md",
+    ".claude/agents/odd-news-researcher.md",
 ]
 
 # 免責文の冒頭。鑑定の型.md 以外でこれが出たら、鑑定文が commit されたということ
