@@ -24,6 +24,7 @@ KATA = "departments/coconala/鑑定の型.md"
 LOGGED_FILES = [
     KATA,
     "departments/coconala/CLAUDE.md",
+    "departments/crypto/CLAUDE.md",
     ".claude/agents/coconala-kantei.md",
     ".claude/agents/coconala-kantei-checker.md",
     ".claude/agents/coconala-kantei-reviewer.md",
