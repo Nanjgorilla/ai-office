@@ -158,7 +158,9 @@ def check_kata_consistency() -> None:
         err(f"{KATA}: 合計の帯（合計は◯〜◯字）が見つかりません")
         return
     band_lo, band_hi = (int(x.replace(",", "")) for x in m.groups())
-    total = sum(r[1] for r in rows) + (int(FUKI.search(text).group(1)) if FUKI.search(text) else 0)
+    note_outside = "免責の注記は字数に数えない" in text
+    fu_for_total = None if note_outside else FUKI.search(text)
+    total = sum(r[1] for r in rows) + (int(fu_for_total.group(1)) if fu_for_total else 0)
     if not band_lo <= total <= band_hi:
         err(
             f"{KATA}: 段落の目安の合計 {total}字 が、帯 {band_lo}〜{band_hi}字 の外です"
@@ -168,11 +170,12 @@ def check_kata_consistency() -> None:
     # 各段落が許容幅に収まっていても合計が帯を外れる状態を、型が説明しているか見る。
     # 付記（性別の断り・締めの一文）は段落表の外にあるが、本文の字数に入る。
     # 枠を置かないと、段落が全部収まっていても合計が帯を超える。
-    fu = FUKI.search(text)
+    note_outside = "免責の注記は字数に数えない" in text
+    fu = None if note_outside else FUKI.search(text)
     fu_mid, fu_lo, fu_hi = (
         (int(fu.group(1)), int(fu.group(2)), int(fu.group(3))) if fu else (0, 0, 0)
     )
-    if not fu:
+    if not fu and not note_outside:
         err(f"{KATA}: 付記の字数の枠（付記は◯字（◯〜◯））が見つかりません")
 
     sum_hi = sum(r[3] for r in rows) + fu_hi
